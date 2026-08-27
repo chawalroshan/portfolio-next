@@ -6,6 +6,7 @@ import { SITE_NAME, SITE_TITLE_FALLBACK } from '@/lib/site-config';
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 export const alt = SITE_NAME;
+export const dynamic = 'force-dynamic';
 
 export default async function Image() {
   const profile = await getProfile();

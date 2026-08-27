@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const post = await getBlogBySlug(params.slug);
   if (!post) return { title: 'Post not found' };
   const description = post.excerpt ?? undefined;
+  const publishedAt = post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined;
   return {
     title: post.title,
     description,
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       title: post.title,
       description,
       type: 'article',
-      publishedTime: post.publishedAt?.toISOString(),
+      publishedTime: publishedAt,
       tags: post.tags,
     },
   };

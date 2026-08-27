@@ -1,0 +1,161 @@
+/* ── Layout ── */
+.Skills__container {
+  text-align: center;
+  padding: 2rem 1rem 4rem;
+}
+
+.Skills__heading {
+  font-size: 2.4rem;
+  font-family: 'Poppins', sans-serif;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Filter Tabs ── */
+.Skills__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+}
+
+.Skills__tab {
+  background: transparent;
+  border: 2px solid #4b8efb;
+  color: #4b8efb;
+  padding: 0.4rem 1.2rem;
+  border-radius: 2rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.Skills__tab:hover,
+.Skills__tab.active {
+  background: #4b8efb;
+  color: #fff;
+}
+
+/* ── Section ── */
+.Skills__section {
+  margin-bottom: 2.5rem;
+}
+
+.Skills__category {
+  font-size: 1.3rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #333;
+}
+
+/* ── Grid ── */
+.Skills__list {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* ── Card base ── */
+.Skills__item a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 110px;
+  height: 100px;
+  border-radius: 1rem;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.Skills__icon {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.Skills__name {
+  font-size: 0.75rem;
+}
+
+.Skills__item a:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  animation: bounce 0.4s ease;
+}
+
+@keyframes bounce {
+  0%   { transform: translateY(-4px) scale(1.05); }
+  30%  { transform: translateY(-8px) scale(1.07); }
+  60%  { transform: translateY(-2px) scale(1.04); }
+  100% { transform: translateY(-4px) scale(1.05); }
+}
+
+/* ── Per-skill colors ── */
+
+/* Frontend */
+.Skills__item--react a    { background: #20232a; }
+.Skills__item--next a     { background: #111; }
+.Skills__item--js a       { background: #f0c000; color: #1a1a1a; }
+.Skills__item--html a     { background: #e44d26; }
+.Skills__item--css a      { background: #264de4; }
+.Skills__item--tailwind a { background: #0ea5e9; }
+.Skills__item--mui a      { background: #007fff; }
+
+/* Backend */
+.Skills__item--node a   { background: #3c873a; }
+.Skills__item--nest a   { background: #ea2845; }
+.Skills__item--php a    { background: #4f5b93; }
+.Skills__item--python a { background: #3572a5; }
+.Skills__item--github a { background: #24292e; }
+
+/* Database */
+.Skills__item--postgres a { background: #336791; }
+.Skills__item--mysql a    { background: #00618a; }
+.Skills__item--mongo a    { background: #13aa52; }
+.Skills__item--prisma a   { background: #2d3748; }
+
+/* DevOps */
+.Skills__item--docker a { background: #2496ed; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .Skills__item a {
+    width: 90px;
+    height: 85px;
+  }
+  .Skills__icon { font-size: 1.6rem; }
+}
+
+@media (max-width: 480px) {
+  .Skills__list {
+    gap: 0.75rem;
+  }
+  .Skills__item a {
+    width: 80px;
+    height: 78px;
+    font-size: 0.7rem;
+  }
+  .Skills__icon { font-size: 1.4rem; }
+}
+
+@media (max-width: 360px) {
+  .Skills__item a {
+    width: 70px;
+    height: 70px;
+  }
+}

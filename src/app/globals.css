@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   Ported verbatim from the Vite app (src/App.css + src/index.css).
+   Manrope is loaded via a <link> in app/layout.tsx so the literal
+   'Manrope' family referenced by inline styles resolves as before.
+   ───────────────────────────────────────────────────────────── */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Dark theme (default) */
+  --bg-primary: #0b0b1a;
+  --bg-secondary: #12122a;
+  --bg-tertiary: #1a1a35;
+  --text-primary: #ffffff;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --accent: #a855f7;
+  --accent-hover: #c084fc;
+  --accent-subtle: rgba(168, 85, 247, 0.1);
+  --accent-border: rgba(168, 85, 247, 0.2);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --card-bg: #12122a;
+  --input-bg: #12122a;
+  --shadow: 0 0 40px rgba(168, 85, 247, 0.08);
+  --nav-bg: rgba(11, 11, 26, 0.95);
+}
+
+.app.light {
+  --bg-primary: #f8f7ff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0eeff;
+  --text-primary: #0f0a1e;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-subtle: rgba(124, 58, 237, 0.08);
+  --accent-border: rgba(124, 58, 237, 0.2);
+  --border: rgba(0, 0, 0, 0.07);
+  --border-hover: rgba(0, 0, 0, 0.12);
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --shadow: 0 0 40px rgba(124, 58, 237, 0.06);
+  --nav-bg: rgba(248, 247, 255, 0.95);
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--accent-border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Selection */
+::selection {
+  background: rgba(168, 85, 247, 0.3);
+  color: var(--text-primary);
+}
+
+/* ── Keyframes (merged from App.css + component <style> blocks) ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.4; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.1); }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-up { animation: fadeUp 0.6s ease forwards; }
+.animate-fade-in { animation: fadeIn 0.5s ease forwards; }
+
+/* Reveal the external-link chevron on skill hover (was in Hero's inline <style>) */
+a:hover .skill-ext { opacity: 1 !important; }
+
+/* Hide the hero side rails on very small screens (was in Hero's inline <style>) */
+@media (max-width: 640px) {
+  .hero-socials, .hero-scroll { display: none !important; }
+}
+
+/* ── Hover states moved from inline JS onMouseEnter/Leave to CSS, so About,
+   Projects and Footer can remain Server Components. Visuals are identical. ── */
+.stat-card {
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.stat-card:hover {
+  border-color: var(--accent-border) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.12);
+}
+
+.project-card {
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.project-card:hover {
+  border-color: var(--accent-border) !important;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.12);
+}
+.project-card:hover .project-arrow { transform: translateX(3px); opacity: 1; }
+
+.footer-social {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+.footer-social:hover { color: var(--accent); }
+
+.nav-link { transition: color 0.2s ease; }
+
+/* ── Admin dashboard cards ── */
+.admin-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-border) !important;
+}
+
+/* ── Tiptap / rendered blog content (admin editor + public blog pages) ── */
+.tiptap:focus { outline: none; }
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--text-muted);
+  pointer-events: none;
+  height: 0;
+}
+.prose-content { color: var(--text-secondary); line-height: 1.8; font-size: 1rem; }
+.prose-content h1,
+.prose-content h2,
+.prose-content h3 { color: var(--text-primary); font-weight: 800; letter-spacing: -0.02em; margin: 1.5rem 0 0.75rem; }
+.prose-content h1 { font-size: 1.875rem; }
+.prose-content h2 { font-size: 1.5rem; }
+.prose-content h3 { font-size: 1.25rem; }
+.prose-content p { margin: 0 0 1rem; }
+.prose-content a { color: var(--accent); text-decoration: underline; }
+.prose-content ul,
+.prose-content ol { margin: 0 0 1rem 1.25rem; }
+.prose-content li { margin: 0.25rem 0; }
+.prose-content img { max-width: 100%; border-radius: 0.75rem; margin: 1rem 0; }
+.prose-content pre {
+  background: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  margin: 0 0 1rem;
+}
+.prose-content code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.875rem; }
+.prose-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem;
+}

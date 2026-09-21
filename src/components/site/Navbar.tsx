@@ -1,10 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 import { getSocialIcon } from '@/lib/icons';
 import type { SocialLink } from '@/types';
+
+/** 3D robot logo mark — lazy, client-only, keeps three.js out of first load. */
+const NavBot = dynamic(() => import('./NavBot'), {
+  ssr: false,
+  loading: () => <span style={{ display: 'block', width: '144px', height: '144px' }} aria-hidden="true" />,
+});
 
 type NavbarProps = {
   isDark: boolean;
@@ -66,7 +73,7 @@ function Navbar({ isDark, toggleTheme, isMenuOpen, setIsMenuOpen, logoName, soci
           left: 0,
           right: 0,
           zIndex: 50,
-          overflowX: 'hidden',
+          overflow: 'visible',
           backgroundColor: scrolled ? 'var(--nav-bg)' : 'transparent',
           backdropFilter: scrolled ? 'blur(16px)' : 'none',
           borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
@@ -74,21 +81,20 @@ function Navbar({ isDark, toggleTheme, isMenuOpen, setIsMenuOpen, logoName, soci
       >
         <div style={{ maxWidth: '72rem', margin: '0 auto', padding: '0 1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
-            {/* Logo */}
+            {/* Logo — 3D chatbot mark */}
             <Link
               href="/"
+              aria-label="Home"
               style={{
-                fontSize: '1.125rem',
-                fontWeight: 700,
-                letterSpacing: '-0.02em',
-                color: 'var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
                 textDecoration: 'none',
-                transition: 'color 0.2s ease, opacity 0.2s ease',
+                transition: 'opacity 0.2s ease',
               }}
               onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.75')}
               onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
             >
-              {logoName}
+              <NavBot />
             </Link>
 
             {/* Desktop Nav */}

@@ -39,3 +39,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# browser session cookies (may contain live auth tokens)
+cookies.txt

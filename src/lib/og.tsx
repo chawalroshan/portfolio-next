@@ -21,8 +21,8 @@ export function renderOg({ title, subtitle, tag }: { title: string; subtitle?: s
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '80px',
-          background: '#0b0b1a',
-          backgroundImage: 'radial-gradient(ellipse at 30% 20%, rgba(168,85,247,0.35), transparent 55%)',
+          background: '#0d1117',
+          backgroundImage: 'radial-gradient(ellipse at 30% 20%, rgba(63,185,80,0.3), transparent 55%)',
           fontFamily: 'sans-serif',
         }}
       >
@@ -35,8 +35,8 @@ export function renderOg({ title, subtitle, tag }: { title: string; subtitle?: s
                 fontWeight: 700,
                 letterSpacing: 4,
                 textTransform: 'uppercase',
-                color: '#c084fc',
-                border: '1px solid rgba(168,85,247,0.4)',
+                color: '#56d364',
+                border: '1px solid rgba(63,185,80,0.4)',
                 borderRadius: 100,
                 padding: '8px 24px',
               }}
@@ -49,17 +49,17 @@ export function renderOg({ title, subtitle, tag }: { title: string; subtitle?: s
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', fontSize: 72, fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: -2 }}>
+          <div style={{ display: 'flex', fontSize: 72, fontWeight: 800, color: '#e6edf3', lineHeight: 1.1, letterSpacing: -2 }}>
             {title}
           </div>
           {subtitle ? (
-            <div style={{ display: 'flex', marginTop: 24, fontSize: 32, color: '#9ca3af', lineHeight: 1.4 }}>
+            <div style={{ display: 'flex', marginTop: 24, fontSize: 32, color: '#8b949e', lineHeight: 1.4 }}>
               {subtitle}
             </div>
           ) : null}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', fontSize: 28, fontWeight: 700, color: '#a855f7' }}>
+        <div style={{ display: 'flex', alignItems: 'center', fontSize: 28, fontWeight: 700, color: '#3fb950' }}>
           {SITE_NAME}
         </div>
       </div>

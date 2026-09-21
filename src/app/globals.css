@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Self-hosted Manrope variable font (wght 200-800). Two subsets, ~39KB
+   total, preloaded from layout — no render-blocking Google Fonts chain. */
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/manrope-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/manrope-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Ported verbatim from the Vite app (src/App.css + src/index.css).
    Manrope is loaded via a <link> in app/layout.tsx so the literal
@@ -15,42 +34,45 @@
 }
 
 :root {
-  /* Dark theme (default) */
-  --bg-primary: #0b0b1a;
-  --bg-secondary: #12122a;
-  --bg-tertiary: #1a1a35;
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --accent: #a855f7;
-  --accent-hover: #c084fc;
-  --accent-subtle: rgba(168, 85, 247, 0.1);
-  --accent-border: rgba(168, 85, 247, 0.2);
-  --border: rgba(255, 255, 255, 0.06);
-  --border-hover: rgba(255, 255, 255, 0.12);
-  --card-bg: #12122a;
-  --input-bg: #12122a;
-  --shadow: 0 0 40px rgba(168, 85, 247, 0.08);
-  --nav-bg: rgba(11, 11, 26, 0.95);
+  /* Terminal / code-editor theme (GitHub dark) */
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-tertiary: #1c2128;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #6e7681;
+  --accent: #3fb950;
+  --accent-hover: #56d364;
+  --accent-subtle: rgba(63, 185, 80, 0.1);
+  --accent-border: rgba(63, 185, 80, 0.25);
+  --accent-secondary: #f0883e;
+  --border: #30363d;
+  --border-hover: #484f58;
+  --card-bg: #161b22;
+  --input-bg: #0d1117;
+  --shadow: 0 0 40px rgba(63, 185, 80, 0.07);
+  --nav-bg: rgba(13, 17, 23, 0.95);
 }
 
 .app.light {
-  --bg-primary: #f8f7ff;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f0eeff;
-  --text-primary: #0f0a1e;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
-  --accent: #7c3aed;
-  --accent-hover: #6d28d9;
-  --accent-subtle: rgba(124, 58, 237, 0.08);
-  --accent-border: rgba(124, 58, 237, 0.2);
-  --border: rgba(0, 0, 0, 0.07);
-  --border-hover: rgba(0, 0, 0, 0.12);
-  --card-bg: #ffffff;
+  /* Terminal / code-editor theme (GitHub light) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-tertiary: #eaeef2;
+  --text-primary: #1f2328;
+  --text-secondary: #59636e;
+  --text-muted: #818b98;
+  --accent: #1a7f37;
+  --accent-hover: #1c8139;
+  --accent-subtle: rgba(26, 127, 55, 0.08);
+  --accent-border: rgba(26, 127, 55, 0.3);
+  --accent-secondary: #9a6700;
+  --border: #d1d9e0;
+  --border-hover: #8b949e;
+  --card-bg: #f6f8fa;
   --input-bg: #ffffff;
-  --shadow: 0 0 40px rgba(124, 58, 237, 0.06);
-  --nav-bg: rgba(248, 247, 255, 0.95);
+  --shadow: 0 0 40px rgba(31, 35, 40, 0.06);
+  --nav-bg: rgba(255, 255, 255, 0.95);
 }
 
 body {
@@ -74,7 +96,7 @@ body {
 
 /* Selection */
 ::selection {
-  background: rgba(168, 85, 247, 0.3);
+  background: rgba(63, 185, 80, 0.3);
   color: var(--text-primary);
 }
 
@@ -95,14 +117,6 @@ body {
   0%, 100% { opacity: 0.2; }
   50% { opacity: 0.4; }
 }
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-@keyframes scrollPulse {
-  0%, 100% { opacity: 0.4; transform: scaleY(1); }
-  50% { opacity: 1; transform: scaleY(1.1); }
-}
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -122,32 +136,169 @@ a:hover .skill-ext { opacity: 1 !important; }
   .hero-socials, .hero-scroll { display: none !important; }
 }
 
-/* ── Hover states moved from inline JS onMouseEnter/Leave to CSS, so About,
-   Projects and Footer can remain Server Components. Visuals are identical. ── */
+/* ── Hover states: border-color feedback only. No hover lifts, no shadow
+    pulses — motion on this site is reserved for the hero intro and the
+    Experience bars. The arrow nudge below is the click invitation. ── */
 .stat-card {
-  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  transition: border-color 0.25s;
 }
 .stat-card:hover {
   border-color: var(--accent-border) !important;
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.12);
 }
 
 .project-card {
-  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  transition: border-color 0.25s;
 }
 .project-card:hover {
   border-color: var(--accent-border) !important;
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.12);
 }
 .project-card:hover .project-arrow { transform: translateX(3px); opacity: 1; }
+
+/* Projects grid: single column on mobile, two columns from tablet up.
+   The featured card spans both columns (see .project-featured). */
+.projects-grid { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+@media (min-width: 760px) {
+  .projects-grid { grid-template-columns: 1fr 1fr; }
+}
+.project-featured { grid-column: 1 / -1; }
+@media (min-width: 760px) {
+  .project-featured { flex-direction: row !important; }
+  .project-featured .project-featured-media { width: 42%; flex-shrink: 0; aspect-ratio: auto; min-height: 240px; }
+  .project-featured .project-featured-media img { height: 100% !important; position: absolute; inset: 0; }
+  .project-featured .project-featured-body { justify-content: center; flex: 1; }
+}
+
+/* Hero CTA hovers — lift + glow. These buttons are the click invitation,
+   so they get the full treatment. */
+.hero-cta-primary:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-2px) scale(1.03); box-shadow: 0 10px 28px rgba(63, 185, 80, 0.4); }
+.hero-cta-secondary:hover { border-color: var(--border-hover) !important; color: var(--text-primary) !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); }
+.hero-rail-link { transition: opacity 0.2s ease; }
+.hero-rail-link:hover { opacity: 0.85; }
+
+/* Mobile hero: portrait drops lower to clear the centered astronaut;
+   CTAs go transparent with darker haloed text (reads over bright pixels
+   and dark bg alike). */
+@media (max-width: 640px) {
+  .hero-portrait { margin-top: 2.5rem; }
+  .hero-cta-primary {
+    background: transparent !important;
+    border-color: var(--accent-border) !important;
+    color: #aeb8c2 !important;
+    font-weight: 800 !important;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.9);
+    box-shadow: none !important;
+  }
+  .hero-cta-secondary {
+    background: transparent !important;
+    border-color: var(--border-hover) !important;
+    color: #aeb8c2 !important;
+    font-weight: 800 !important;
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9), 0 0 2px rgba(0, 0, 0, 0.9);
+    box-shadow: none !important;
+  }
+}
 
 .footer-social {
   color: var(--text-muted);
   transition: color 0.2s ease;
 }
 .footer-social:hover { color: var(--accent); }
+
+/* ── Lava footer: the underworld. Full-bleed char-black with drifting
+   magma glow, a glowing crack seam, and rising embers. Hell-dark in
+   both color modes. ── */
+.lava-footer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #0c0605 0%, #050201 100%);
+  margin-top: 2rem;
+}
+.lava-glow {
+  position: absolute;
+  inset: -20% -10%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 45% 60% at 18% 100%, rgba(218, 54, 51, 0.28) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 55% at 55% 105%, rgba(240, 136, 62, 0.32) 0%, transparent 70%),
+    radial-gradient(ellipse 35% 50% at 85% 100%, rgba(255, 182, 87, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 35% at 50% 115%, rgba(122, 31, 26, 0.5) 0%, transparent 70%);
+  filter: blur(12px);
+  animation: lavaDrift 18s ease-in-out infinite alternate;
+}
+@keyframes lavaDrift {
+  from { transform: translateX(-3%) scaleY(1); }
+  to { transform: translateX(3%) scaleY(1.08); }
+}
+.lava-seam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent 5%, #ffb657 30%, #f0883e 50%, #da3633 70%, transparent 95%);
+  filter: drop-shadow(0 0 8px rgba(240, 136, 62, 0.8));
+}
+.lava-embers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.lava-ember {
+  position: absolute;
+  bottom: 8%;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #ffd9a0 0%, #f0883e 55%, transparent 75%);
+  box-shadow: 0 0 8px 2px rgba(240, 136, 62, 0.55);
+  opacity: 0;
+  animation-name: emberRise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes emberRise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: translateY(-190px) translateX(14px); opacity: 0; }
+}
+.lava-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 2rem;
+}
+.lava-line {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  color: #f0883e;
+  margin-bottom: 1.25rem;
+  text-shadow: 0 0 12px rgba(240, 136, 62, 0.45);
+}
+.lava-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid rgba(240, 136, 62, 0.18);
+  padding-top: 1.25rem;
+}
+.lava-copy { font-size: 0.875rem; color: #8b949e; }
+.lava-name {
+  font-weight: 700;
+  background: linear-gradient(to right, #ffd9a0, #f0883e 55%, #da3633);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.lava-social { color: #c9a68a !important; transition: color 0.2s ease, filter 0.2s ease; }
+.lava-social:hover { color: #ffb657 !important; filter: drop-shadow(0 0 6px rgba(255, 182, 87, 0.8)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .lava-glow, .lava-ember { animation: none; }
+  .lava-ember { display: none; }
+}
 
 .nav-link { transition: color 0.2s ease; }
 

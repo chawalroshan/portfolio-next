@@ -1,4 +1,5 @@
 import ThemeShell from '@/components/site/ThemeShell';
+import SmoothScroll from '@/components/site/SmoothScroll';
 import { getProfile } from '@/lib/data';
 import { SITE_NAME } from '@/lib/site-config';
 
@@ -16,6 +17,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <ThemeShell logoName={logoName} socials={socials}>
+      <SmoothScroll />
       {children}
     </ThemeShell>
   );

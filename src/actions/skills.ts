@@ -74,7 +74,8 @@ export async function updateSkill(id: string, input: unknown): Promise<ActionRes
 export async function deleteSkill(id: string): Promise<ActionResult> {
   await requireAdmin();
   try {
-    await prisma.skill.delete({ where: { id } });
+    const deleted = await prisma.skill.delete({ where: { id } });
+    console.warn(`[audit] skill deleted: ${deleted.name} (${deleted.id})`);
     revalidateSkills();
     return { ok: true };
   } catch {

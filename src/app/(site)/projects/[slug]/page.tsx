@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArrowLeft, ExternalLink, Github } from 'lucide-react';
 import { getProjectBySlug, getPublishedProjectSlugs } from '@/lib/data';
+import { safeHref } from '@/lib/safe-url';
 
 /**
  * Project detail — /projects/[slug]. Statically generated for every published
@@ -63,10 +64,10 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         </div>
       )}
 
-      {project.imageUrl && (
+      {safeHref(project.imageUrl, '') !== '' && (
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', borderRadius: '1.125rem', overflow: 'hidden', border: '1px solid var(--border)', marginBottom: '2rem', background: 'var(--bg-tertiary)' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project.imageUrl} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={safeHref(project.imageUrl, '')} alt={project.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </div>
       )}
 
@@ -78,7 +79,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.875rem' }}>
           {project.liveUrl && (
             <a
-              href={project.liveUrl}
+              href={safeHref(project.liveUrl)}
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '100px', border: '1px solid var(--accent)', background: 'var(--accent)', color: '#fff', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}
@@ -88,7 +89,7 @@ export default async function ProjectPage({ params }: { params: { slug: string }
           )}
           {project.repoUrl && (
             <a
-              href={project.repoUrl}
+              href={safeHref(project.repoUrl)}
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '100px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 600, textDecoration: 'none' }}

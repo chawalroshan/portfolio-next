@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isSafeUrl } from './safe-url';
 
 /**
  * Zod schemas shared by the Server Actions. Client forms send typed objects
@@ -14,9 +15,23 @@ const optionalString = z
     return s === '' ? null : s;
   });
 
+// URLs rendered as <a href> on the public site. Only https://, mailto:,
+// site-relative /paths and #fragments are allowed — javascript:/data:/vbscript:
+// and protocol-relative // URLs are rejected (stored-XSS hardening).
+const safeUrlMessage = 'URL must start with https://, mailto:, or /';
+
+// Optional URL: same empty→null coercion as optionalString, plus scheme check.
+const safeOptionalUrl = optionalString.refine((v) => v === null || isSafeUrl(v), {
+  message: safeUrlMessage,
+});
+
 export const socialLinkSchema = z.object({
   label: z.string().trim().min(1, 'Social label is required'),
-  url: z.string().trim().min(1, 'Social URL is required'),
+  url: z
+    .string()
+    .trim()
+    .min(1, 'Social URL is required')
+    .refine(isSafeUrl, { message: safeUrlMessage }),
   icon: z.string().trim().min(1, 'Social icon key is required'),
 });
 
@@ -25,9 +40,9 @@ export const projectInputSchema = z.object({
   slug: z.string().trim().optional().default(''),
   description: z.string().trim().min(1, 'Description is required'),
   techStack: z.array(z.string().trim().min(1)).default([]),
-  imageUrl: optionalString,
-  liveUrl: optionalString,
-  repoUrl: optionalString,
+  imageUrl: safeOptionalUrl,
+  liveUrl: safeOptionalUrl,
+  repoUrl: safeOptionalUrl,
   published: z.boolean().default(false),
 });
 export type ProjectInput = z.input<typeof projectInputSchema>;
@@ -37,7 +52,7 @@ export const blogInputSchema = z.object({
   slug: z.string().trim().optional().default(''),
   content: z.string().min(1, 'Content is required'),
   excerpt: optionalString,
-  coverImage: optionalString,
+  coverImage: safeOptionalUrl,
   tags: z.array(z.string().trim().min(1)).default([]),
   published: z.boolean().default(false),
 });
@@ -48,7 +63,7 @@ export const skillInputSchema = z.object({
   category: z.string().trim().min(1, 'Category is required'),
   icon: z.string().trim().min(1, 'Icon is required'),
   level: z.string().trim().min(1).default('Intermediate'),
-  url: optionalString,
+  url: safeOptionalUrl,
   published: z.boolean().default(true),
 });
 export type SkillInput = z.input<typeof skillInputSchema>;
@@ -58,7 +73,7 @@ export const profileInputSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   bio: z.string().trim().min(1, 'Bio is required'),
   bioSecondary: optionalString,
-  resumeUrl: optionalString,
+  resumeUrl: safeOptionalUrl,
   email: optionalString,
   socialLinks: z.array(socialLinkSchema).default([]),
 });

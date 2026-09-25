@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { Download, User } from 'lucide-react';
 import { getSocialIcon } from '@/lib/icons';
+import { safeHref } from '@/lib/safe-url';
 import type { SocialLink } from '@/types';
 
 /**
@@ -68,7 +69,11 @@ export default function HeroIntro({ name, title, resumeUrl, socials, profileImag
   const reduce = useReducedMotion();
 
   const handleDownload = () => {
-    window.open(resumeUrl || '/images/ROSHAN-CHAWAL-SD-Resume.pdf', '_blank');
+    window.open(
+      safeHref(resumeUrl, '/images/ROSHAN-CHAWAL-SD-Resume.pdf'),
+      '_blank',
+      'noopener,noreferrer',
+    );
   };
 
   return (
@@ -145,7 +150,7 @@ export default function HeroIntro({ name, title, resumeUrl, socials, profileImag
             {socials.map((s) => (
               <a
                 key={s.label}
-                href={s.url}
+                href={safeHref(s.url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}

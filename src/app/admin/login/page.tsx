@@ -9,6 +9,13 @@ function AdminLoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/admin';
+  const reason = searchParams.get('reason');
+  const notice =
+    reason === 'idle'
+      ? 'Signed out after 30 minutes of inactivity.'
+      : reason === 'expired'
+        ? 'Session expired after 2 hours. Please sign in again.'
+        : null;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +102,10 @@ function AdminLoginPageContent() {
               style={inputStyle}
             />
           </div>
+
+          {notice && !error && (
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.8125rem', margin: 0 }}>{notice}</p>
+          )}
 
           {error && (
             <p style={{ color: '#f87171', fontSize: '0.8125rem', margin: 0 }}>{error}</p>

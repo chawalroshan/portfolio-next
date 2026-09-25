@@ -1,15 +1,21 @@
 import type { NextAuthConfig } from 'next-auth';
+import { SESSION_MAX_AGE_SECONDS } from '@/lib/auth-timeouts';
 
 /**
  * Edge-safe auth config (no Prisma / bcrypt / Node APIs here).
  * Imported by src/middleware.ts AND by src/auth.ts. The Credentials provider
  * and DB lookups are added in src/auth.ts, which runs only in the Node runtime.
+ *
+ * Session lifetime: absolute expiry SESSION_MAX_AGE_SECONDS after sign-in
+ * (see src/lib/auth-timeouts.ts). The client-side <AutoLogout/> in the admin
+ * panel adds idle timeout on top; middleware bounces expired sessions to login.
  */
 export const authConfig = {
   pages: {
     signIn: '/admin/login',
   },
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt', maxAge: SESSION_MAX_AGE_SECONDS },
+  jwt: { maxAge: SESSION_MAX_AGE_SECONDS },
   callbacks: {
     // Route protection. Runs in middleware (edge). `auth` is the session.
     authorized({ auth, request: { nextUrl } }) {

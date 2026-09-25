@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { ArrowLeft } from 'lucide-react';
 import { getBlogBySlug, getPublishedBlogSlugs } from '@/lib/data';
+import { safeHref } from '@/lib/safe-url';
 
 /**
  * Blog post — /blog/[slug]. Statically generated per published slug and
@@ -78,10 +79,10 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         </div>
       )}
 
-      {post.coverImage && (
+      {safeHref(post.coverImage, '') !== '' && (
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', borderRadius: '1.125rem', overflow: 'hidden', border: '1px solid var(--border)', marginBottom: '2.5rem', background: 'var(--bg-tertiary)' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.coverImage} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={safeHref(post.coverImage, '')} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         </div>
       )}
 

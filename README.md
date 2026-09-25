@@ -184,8 +184,9 @@ Unpublished items are hidden from the public site but always visible in the admi
 
 - **Static assets that aren't in the schema.** The hero photo (`/images/profile.jpg`), the "Years Experience" and "Client Satisfaction" stats, and the résumé PDF path are **not** editable from the admin because the `Profile` model has no fields for them — they remain static (the résumé URL *is* editable via the profile form). Add columns to `Profile` and wire them into `ProfileForm` if you want them dynamic.
 - **Blog HTML is rendered with `dangerouslySetInnerHTML`.** This is safe here because the only author is the authenticated admin (the site owner). If you ever open authoring to untrusted users, sanitize the HTML server-side first.
-- **SVG uploads are allowed.** For the same single-trusted-author reason this is acceptable; SVGs can embed scripts, so if the trust model changes, drop `image/svg+xml` from the allow-list in `src/app/api/upload/route.ts`.
-- **Images use plain `<img>` tags** (matching the original design) rather than `next/image`. `next.config.mjs` already whitelists Blob/remote hosts should you switch to `next/image` later.
+- **SVG uploads are blocked.** SVGs can embed scripts (stored XSS via the public Blob URL), so `image/svg+xml` is excluded from the allow-list in `src/app/api/upload/route.ts`. Use PNG/WebP instead.
+- **Images use plain `<img>` tags** (matching the original design) rather than `next/image`. `next.config.mjs` only whitelists Vercel Blob hosts for optimization — add explicit hosts if you switch to `next/image` for a CDN later.
+- **Security hardening (2026-09).** Admin sessions expire after 2h absolute + 30min idle (`src/lib/auth-timeouts.ts`); login has a 5-attempt/15-min lockout, uploads are throttled per IP, and all Server Actions share a 120/min throttle (`src/lib/rate-limit.ts`); admin-only URLs are scheme-validated (`https://`, `mailto:`, `/`, `#`) with a runtime `safeHref` guard; security headers ship without a CSP (CSP without `unsafe-inline` would break the inline-style UI).
 - **Legacy components** in `src/components/legacy/` are verbatim ports kept for reference and are not mounted anywhere.
 
 ## ⚠️ Verification status

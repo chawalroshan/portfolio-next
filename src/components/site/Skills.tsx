@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { getCategoryIcon, getSkillIcon } from '@/lib/icons';
+import { safeHref } from '@/lib/safe-url';
 import Snowfall from './Snowfall';
 import type { SkillGroup } from '@/types';
 
@@ -83,12 +84,14 @@ export default function Skills({ groups }: { groups: SkillGroup[] }) {
           <div key={activeCategory.label} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem 2rem' }}>
             {activeCategory.skills.map((skill) => {
               const pct = levelToPercent(skill.level);
+              const href = safeHref(skill.url);
+              const hasLink = href !== '#';
               return (
                 <a
                   key={skill.id}
-                  href={skill.url ?? '#'}
-                  target={skill.url ? '_blank' : undefined}
-                  rel={skill.url ? 'noopener noreferrer' : undefined}
+                  href={href}
+                  target={hasLink ? '_blank' : undefined}
+                  rel={hasLink ? 'noopener noreferrer' : undefined}
                   style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.625rem 0.75rem', borderRadius: '0.625rem', textDecoration: 'none', transition: 'background 0.2s ease' }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--border)')}
                   onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}

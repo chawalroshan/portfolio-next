@@ -95,6 +95,7 @@ export async function deleteProject(id: string): Promise<ActionResult> {
   await requireAdmin();
   try {
     const deleted = await prisma.project.delete({ where: { id } });
+    console.warn(`[audit] project deleted: ${deleted.slug} (${deleted.id})`);
     revalidateProjects(deleted.slug);
     return { ok: true };
   } catch {

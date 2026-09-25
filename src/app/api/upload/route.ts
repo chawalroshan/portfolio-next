@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 import { auth } from '@/auth';
+import { UPLOAD_LIMIT, checkRateLimit } from '@/lib/rate-limit';
 
 /**
  * Image upload endpoint used by the Tiptap editor and cover/project image
@@ -15,12 +16,27 @@ import { auth } from '@/auth';
 export const runtime = 'nodejs';
 
 const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
-const ALLOWED = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
+// NOTE: SVG is deliberately excluded — SVGs can embed scripts (stored XSS
+// when the public Blob URL is visited directly). Use PNG/WebP instead.
+const ALLOWED = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
 export async function POST(request: Request): Promise<NextResponse> {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    'unknown';
+  const limit = checkRateLimit(`upload:${ip}`, UPLOAD_LIMIT);
+  if (!limit.allowed) {
+    console.warn(`[audit] upload throttled for ${ip}`);
+    return NextResponse.json(
+      { error: 'Too many uploads. Try again shortly.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } },
+    );
   }
 
   let form: FormData;

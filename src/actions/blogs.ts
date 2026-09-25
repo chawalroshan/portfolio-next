@@ -93,6 +93,7 @@ export async function deleteBlog(id: string): Promise<ActionResult> {
   await requireAdmin();
   try {
     const deleted = await prisma.blog.delete({ where: { id } });
+    console.warn(`[audit] blog deleted: ${deleted.slug} (${deleted.id})`);
     revalidateBlogs(deleted.slug);
     return { ok: true };
   } catch {

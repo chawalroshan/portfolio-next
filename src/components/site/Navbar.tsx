@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { Moon, Sun, Menu, X } from 'lucide-react';
 import { getSocialIcon } from '@/lib/icons';
+import { safeHref } from '@/lib/safe-url';
 import type { SocialLink } from '@/types';
 
 /** 3D robot logo mark — lazy, client-only, keeps three.js out of first load. */
@@ -123,7 +124,7 @@ function Navbar({ isDark, toggleTheme, isMenuOpen, setIsMenuOpen, logoName, soci
                 {socials.map(({ url, label, icon }) => (
                   <a
                     key={label}
-                    href={url}
+                    href={safeHref(url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}
@@ -309,7 +310,7 @@ function Navbar({ isDark, toggleTheme, isMenuOpen, setIsMenuOpen, logoName, soci
                 {socials.map(({ url, label, icon }) => (
                   <a
                     key={label}
-                    href={url}
+                    href={safeHref(url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={label}

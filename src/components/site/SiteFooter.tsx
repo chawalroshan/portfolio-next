@@ -1,4 +1,5 @@
 import { getSocialIcon } from '@/lib/icons';
+import { safeHref } from '@/lib/safe-url';
 import type { SocialLink } from '@/types';
 
 /**
@@ -52,7 +53,7 @@ export default function SiteFooter({ name, socials }: { name: string; socials: S
             {socials.map(({ url, label, icon }) => (
               <a
                 key={label}
-                href={url}
+                href={safeHref(url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}

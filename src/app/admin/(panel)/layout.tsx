@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import AdminNav from '@/components/admin/AdminNav';
+import AutoLogout from '@/components/admin/AutoLogout';
 import { page, container } from '@/components/admin/styles';
 
 /**
@@ -20,6 +21,7 @@ export default async function AdminPanelLayout({ children }: { children: React.R
   return (
     <div style={page}>
       <AdminNav />
+      <AutoLogout />
       <main style={container}>{children}</main>
     </div>
   );

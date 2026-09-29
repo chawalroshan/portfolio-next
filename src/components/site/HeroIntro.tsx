@@ -5,6 +5,7 @@ import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { Download, User } from 'lucide-react';
 import { getSocialIcon } from '@/lib/icons';
 import { safeHref } from '@/lib/safe-url';
+import HeroSmoke from './HeroSmoke';
 import type { SocialLink } from '@/types';
 
 /**
@@ -19,6 +20,7 @@ const HeroScene = dynamic(() => import('./HeroScene'), {
   ssr: false,
   loading: () => <StaticBackdrop />,
 });
+
 
 function StaticBackdrop() {
   return (
@@ -84,9 +86,16 @@ export default function HeroIntro({ name, title, resumeUrl, socials, profileImag
         fontFamily: "'Manrope', sans-serif",
       }}
     >
-      {/* 3D field (lazy, client-only) or static gradient when reduced motion */}
+      {/* 3D field + cursor smoke (lazy, client-only) or static gradient when reduced motion */}
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-        {reduce ? <StaticBackdrop /> : <HeroScene />}
+        {reduce ? (
+          <StaticBackdrop />
+        ) : (
+          <>
+            <HeroScene />
+            <HeroSmoke />
+          </>
+        )}
       </div>
 
       <motion.div

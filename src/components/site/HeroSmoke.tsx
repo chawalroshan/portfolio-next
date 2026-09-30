@@ -30,11 +30,11 @@ const CONFIG = {
   PRESSURE_DISSIPATION: 0.8,
   PRESSURE_ITERATIONS: 20,
   CURL: 28,
-  SPLAT_RADIUS: 0.006,
-  /** one8's smoke dye. */
-  SMOKE_GRAY: 0.36,
-  /** Dye deposited per splat (reference used 0.3x). */
-  DENSITY_SCALE: 0.35,
+  SPLAT_RADIUS: 0.007,
+  /** Grayish sky-blue dye (one8's was neutral gray #5d5d5d). */
+  SMOKE_RGB: [0.44, 0.6, 0.74] as [number, number, number],
+  /** Dye deposited per splat. */
+  DENSITY_SCALE: 0.6,
   /** Pointer-velocity → force gain (reference used 10). */
   FORCE: 8,
 };
@@ -63,14 +63,6 @@ uniform sampler2D uTexture;
 uniform float value;
 void main () {
   gl_FragColor = value * texture2D(uTexture, vUv);
-}`;
-
-const COPY_FRAG = `precision highp float;
-precision mediump sampler2D;
-varying vec2 vUv;
-uniform sampler2D uTexture;
-void main () {
-  gl_FragColor = texture2D(uTexture, vUv);
 }`;
 
 const SPLAT_FRAG = `precision highp float;
@@ -227,14 +219,26 @@ void main () {
   gl_FragColor = vec4(velocity, 0.0, 1.0);
 }`;
 
-/** Final composite: dye brightness → soft alpha over the transparent page. */
+declare global {
+  interface Window {
+    __heroSmoke?: { status: string; detail?: string };
+  }
+}
+
+/**
+ * Final composite over the transparent page. The rgb is intentionally NOT
+ * multiplied by alpha: premultiplying both (dye*a, a) causes quadratic
+ * falloff — faint dye goes to black and the smoke is invisible. Emitting
+ * dye brightness with a soft coverage alpha keeps thin wisps visible on
+ * both light and dark themes.
+ */
 const DISPLAY_FRAG = `precision highp float;
 precision mediump sampler2D;
 varying vec2 vUv;
 uniform sampler2D uTexture;
 void main () {
-  vec3 dye = texture2D(uTexture, vUv).rgb;
-  float a = clamp((dye.r + dye.g + dye.b) / 3.0 * 1.7, 0.0, 0.8);
+  vec3 dye = texture2D(uTexture, vUv).rgb * 1.15;
+  float a = clamp((dye.r + dye.g + dye.b) / 3.0 * 4.0, 0.0, 0.85);
   gl_FragColor = vec4(dye, a);
 }`;
 
@@ -245,20 +249,58 @@ export default function HeroSmoke() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Any GL failure must only kill the smoke — never the hero.
+    try {
+      const cleanup = initSmoke(canvas);
+      if (cleanup) {
+        window.__heroSmoke = { status: 'ok' };
+        return cleanup;
+      }
+    } catch (err) {
+      console.error('[HeroSmoke] disabled:', err);
+      window.__heroSmoke = { status: 'error', detail: String(err) };
+      canvas.style.display = 'none';
+    }
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden="true"
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+    />
+  );
+}
+
+/** Full WebGL setup + sim loop. Throws on any failure (caller degrades). */
+function initSmoke(canvas: HTMLCanvasElement): (() => void) | undefined {
     // WebGL (v2 preferred) with alpha so the hero shows through.
+    // NOTE: premultipliedAlpha stays at its default (true) — opting out has
+    // a known compositor quirk where the canvas composites as fully
+    // transparent. preserveDrawingBuffer keeps the last frame available for
+    // compositing/screenshots instead of racing buffer invalidation.
     const contextAttrs: WebGLContextAttributes = {
       alpha: true,
       depth: false,
       stencil: false,
       antialias: false,
-      premultipliedAlpha: false,
+      preserveDrawingBuffer: true,
     };
     const gl = (
       (canvas.getContext('webgl2', contextAttrs) as GL | null) ??
       (canvas.getContext('webgl', contextAttrs) as GL | null) ??
       (canvas.getContext('experimental-webgl', contextAttrs) as GL | null)
     ) as GL | null;
-    if (!gl) return;
+    if (!gl) {
+      window.__heroSmoke = { status: 'no-webgl' };
+      return;
+    }
+    if (gl.isContextLost()) {
+      // React StrictMode remounts effects on the same canvas in dev; a
+      // previously-released context can't be reused synchronously.
+      throw new Error('WebGL context is lost');
+    }
+    window.__heroSmoke = { status: 'starting' };
     const g: GL = gl;
 
     const isWebGL2 = typeof WebGL2RenderingContext !== 'undefined' && gl instanceof WebGL2RenderingContext;
@@ -266,8 +308,13 @@ export default function HeroSmoke() {
       gl.getExtension('EXT_color_buffer_float');
     } else {
       gl.getExtension('OES_texture_half_float');
-      gl.getExtension('OES_texture_half_float_linear');
     }
+    // Half-float linear filtering isn't universal — without it, LINEAR makes
+    // the sim textures incomplete (black screen). Fall back to NEAREST; the
+    // advection shader does its own manual bilerp, so quality barely changes.
+    const linearFiltering = isWebGL2
+      ? !!gl.getExtension('OES_texture_float_linear')
+      : !!gl.getExtension('OES_texture_half_float_linear');
     const halfFloatExt = isWebGL2
       ? null
       : (gl.getExtension('OES_texture_half_float') as OES_texture_half_float | null);
@@ -281,12 +328,14 @@ export default function HeroSmoke() {
 
     gl.clearColor(0, 0, 0, 0);
 
-    const compile = (type: number, source: string): WebGLShader => {
+    const compile = (type: number, source: string, name: string): WebGLShader => {
       const shader = gl.createShader(type)!;
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
       if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        throw new Error(`Smoke shader: ${gl.getShaderInfoLog(shader)}`);
+        const log = gl.getShaderInfoLog(shader);
+        console.error(`[HeroSmoke] ${name} failed to compile:`, log ?? '(empty info log)');
+        throw new Error(`Smoke shader (${name}): ${log ?? 'unknown compile error'}`);
       }
       return shader;
     };
@@ -301,6 +350,10 @@ export default function HeroSmoke() {
         this.program = gctx.createProgram()!;
         gctx.attachShader(this.program, vertex);
         gctx.attachShader(this.program, fragment);
+        // Pin the quad attribute to location 0 — the blit helper sets up its
+        // vertex pointer once for location 0. Without this, drivers may place
+        // aPosition elsewhere and every draw silently renders nothing.
+        gctx.bindAttribLocation(this.program, 0, 'aPosition');
         gctx.linkProgram(this.program);
         if (!gctx.getProgramParameter(this.program, gctx.LINK_STATUS)) {
           throw new Error(`Smoke program: ${gctx.getProgramInfoLog(this.program)}`);
@@ -359,19 +412,34 @@ export default function HeroSmoke() {
       };
     };
 
-    const vertexShader = compile(gl.VERTEX_SHADER, BASE_VERTEX);
-    const clearProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, CLEAR_FRAG));
-    const splatProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, SPLAT_FRAG));
-    const advectionProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, ADVECTION_FRAG));
-    const divergenceProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, DIVERGENCE_FRAG));
-    const curlProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, CURL_FRAG));
-    const vorticityProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, VORTICITY_FRAG));
-    const pressureProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, PRESSURE_FRAG));
+    const vertexShader = compile(gl.VERTEX_SHADER, BASE_VERTEX, 'vertex');
+    const clearProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, CLEAR_FRAG, 'clear'));
+    const splatProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, SPLAT_FRAG, 'splat'));
+    const advectionProgram = new Program(
+      vertexShader,
+      compile(gl.FRAGMENT_SHADER, ADVECTION_FRAG, 'advection'),
+    );
+    const divergenceProgram = new Program(
+      vertexShader,
+      compile(gl.FRAGMENT_SHADER, DIVERGENCE_FRAG, 'divergence'),
+    );
+    const curlProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, CURL_FRAG, 'curl'));
+    const vorticityProgram = new Program(
+      vertexShader,
+      compile(gl.FRAGMENT_SHADER, VORTICITY_FRAG, 'vorticity'),
+    );
+    const pressureProgram = new Program(
+      vertexShader,
+      compile(gl.FRAGMENT_SHADER, PRESSURE_FRAG, 'pressure'),
+    );
     const gradientSubtractProgram = new Program(
       vertexShader,
-      compile(gl.FRAGMENT_SHADER, GRADIENT_SUBTRACT_FRAG),
+      compile(gl.FRAGMENT_SHADER, GRADIENT_SUBTRACT_FRAG, 'gradient-subtract'),
     );
-    const displayProgram = new Program(vertexShader, compile(gl.FRAGMENT_SHADER, DISPLAY_FRAG));
+    const displayProgram = new Program(
+      vertexShader,
+      compile(gl.FRAGMENT_SHADER, DISPLAY_FRAG, 'display'),
+    );
 
     // Full-screen quad + draw-to-target helper.
     const blit = (() => {
@@ -402,7 +470,7 @@ export default function HeroSmoke() {
     const initTargets = () => {
       simW = canvas.width >> CONFIG.TEXTURE_DOWNSAMPLE;
       simH = canvas.height >> CONFIG.TEXTURE_DOWNSAMPLE;
-      const filter = gl.LINEAR;
+      const filter = linearFiltering ? gl.LINEAR : gl.NEAREST;
       dye = createDoubleFBO(0, simW, simH, filter);
       velocity = createDoubleFBO(2, simW, simH, filter);
       divergence = createFBO(4, simW, simH, gl.NEAREST);
@@ -410,11 +478,32 @@ export default function HeroSmoke() {
       pressure = createDoubleFBO(6, simW, simH, gl.NEAREST);
     };
 
+    const disposeTargets = () => {
+      for (const set of [dye, velocity, pressure] as Array<DoubleFBO | null>) {
+        for (const fbo of set ? [set.first, set.second] : []) {
+          gl.deleteFramebuffer(fbo[1]);
+          gl.deleteTexture(fbo[0]);
+        }
+      }
+      for (const fbo of [divergence, curl] as Array<FBO | null>) {
+        if (fbo) {
+          gl.deleteFramebuffer(fbo[1]);
+          gl.deleteTexture(fbo[0]);
+        }
+      }
+      dye = velocity = pressure = divergence = curl = null;
+    };
+
     const resize = () => {
       const w = canvas.clientWidth;
       const h = canvas.clientHeight;
       if (w === 0 || h === 0) return;
-      if (canvas.width !== w || canvas.height !== h) {
+      // (Re)create targets when the size changed OR when they're missing
+      // (React StrictMode / HMR remounts effects on the same canvas while
+      //  keeping its pixel size — without this, the second init silently
+      //  keeps null targets and renders nothing forever).
+      if (!dye || canvas.width !== w || canvas.height !== h) {
+        disposeTargets();
         canvas.width = w;
         canvas.height = h;
         initTargets();
@@ -425,7 +514,8 @@ export default function HeroSmoke() {
 
     const splat = (x: number, y: number, dx: number, dy: number) => {
       if (!dye || !velocity) return;
-      const g = CONFIG.SMOKE_GRAY * CONFIG.DENSITY_SCALE;
+      const [sr, sg, sb] = CONFIG.SMOKE_RGB;
+      const s = CONFIG.DENSITY_SCALE;
       splatProgram.bind();
       gl.uniform1i(splatProgram.uniforms['uTarget'], velocity.first[2]);
       gl.uniform1f(splatProgram.uniforms['aspectRatio'], canvas.width / canvas.height);
@@ -436,7 +526,7 @@ export default function HeroSmoke() {
       velocity.swap();
 
       gl.uniform1i(splatProgram.uniforms['uTarget'], dye.first[2]);
-      gl.uniform3f(splatProgram.uniforms['color'], g, g, g);
+      gl.uniform3f(splatProgram.uniforms['color'], sr * s, sg * s, sb * s);
       blit(dye.second[1]);
       dye.swap();
     };
@@ -450,8 +540,23 @@ export default function HeroSmoke() {
     });
     io.observe(canvas);
 
+    // Force canonical unit bindings every frame: each tuple's textures must
+    // sit on their tuple units. The Jacobi ping-pong (and any future pass)
+    // otherwise leaves units serving the draw target itself, which ANGLE
+    // rejects as a feedback loop.
+    const syncUnits = () => {
+      for (const set of [dye, velocity, pressure] as Array<DoubleFBO | null>) {
+        if (!set) continue;
+        for (const fbo of [set.first, set.second]) {
+          gl.activeTexture(gl.TEXTURE0 + fbo[2]);
+          gl.bindTexture(gl.TEXTURE_2D, fbo[0]);
+        }
+      }
+    };
+
     const step = () => {
       if (!dye || !velocity || !divergence || !curl || !pressure) return;
+      syncUnits();
       const dt = Math.min((Date.now() - lastTime) / 1000, 0.016);
       lastTime = Date.now();
       gl.viewport(0, 0, simW, simH);
@@ -503,11 +608,15 @@ export default function HeroSmoke() {
       pressureProgram.bind();
       gl.uniform2f(pressureProgram.uniforms['texelSize'], 1 / simW, 1 / simH);
       gl.uniform1i(pressureProgram.uniforms['uDivergence'], divergence[2]);
-      const pressureTexId = pressure.first[2];
-      gl.activeTexture(gl.TEXTURE0 + pressureTexId);
       for (let i = 0; i < CONFIG.PRESSURE_ITERATIONS; i++) {
-        gl.bindTexture(gl.TEXTURE_2D, pressure.first[0]);
-        gl.uniform1i(pressureProgram.uniforms['uPressure'], pressureTexId);
+        // Re-resolve the unit EVERY iteration: swap() flips which texture is
+        // first, and binding a stale unit serves the draw target itself —
+        // a feedback loop that ANGLE rejects with INVALID_OPERATION (which
+        // silently kills the whole pressure solve and, downstream, the smoke).
+        const first = pressure.first;
+        gl.activeTexture(gl.TEXTURE0 + first[2]);
+        gl.bindTexture(gl.TEXTURE_2D, first[0]);
+        gl.uniform1i(pressureProgram.uniforms['uPressure'], first[2]);
         blit(pressure.second[1]);
         pressure.swap();
       }
@@ -535,8 +644,9 @@ export default function HeroSmoke() {
         lastTime = Date.now();
         return;
       }
-      // Re-fit if layout changed the canvas size.
-      if (canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
+      // Re-fit if layout changed the canvas size, or recover if targets
+      // were never created (see resize()).
+      if (!dye || canvas.width !== canvas.clientWidth || canvas.height !== canvas.clientHeight) {
         resize();
       }
       step();
@@ -584,15 +694,8 @@ export default function HeroSmoke() {
       io.disconnect();
       window.removeEventListener('resize', resize);
       window.removeEventListener('pointermove', onMove);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      // NOTE: no loseContext() here — React StrictMode reuses the same canvas
+      // element across effect remounts in dev, and a released context would
+      // break the second init. The context is freed with the canvas by GC.
     };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
-    />
-  );
 }
